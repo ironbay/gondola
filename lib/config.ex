@@ -24,8 +24,11 @@ defmodule Gondola.Config do
         credentials() != nil ->
           :credentials
 
-        true ->
+        from_metadata() ->
           :metadata
+
+        true ->
+          :invalid
       end
 
     Application.put_env(:gondola, :method, method)
@@ -34,6 +37,13 @@ defmodule Gondola.Config do
 
   def from_env() do
     System.get_env("GOOGLE_APPLICATION_CREDENTIALS")
+  end
+
+  def from_metadata() do
+    case Gondola.Token.from_metadata() do
+      {:ok, _token} -> true
+      _ -> false
+    end
   end
 
   def credentials() do

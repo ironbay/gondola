@@ -9,19 +9,22 @@ defmodule Gondola.Token do
     case method do
       :credentials -> from_credentials(scope, Config.credentials())
       :metadata -> from_metadata()
+      :invalid -> {:error, :missing_credentials}
     end
   end
 
   def from_metadata(account \\ "default") do
-    {:ok, result} =
-      Tesla.client([
-        {Tesla.Middleware.Headers, [{"Metadata-Flavor", "Google"}]}
-      ])
-      |> get(
-        "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/#{account}/token"
-      )
-
-    {:ok, result.body}
+    with {:ok, result} <-
+           Tesla.client([
+             {Tesla.Middleware.Headers, [{"Metadata-Flavor", "Google"}]}
+           ])
+           |> get(
+             "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/#{
+               account
+             }/token"
+           ) do
+      {:ok, result.body}
+    end
   end
 
   def from_credentials(scope, credentials) do
