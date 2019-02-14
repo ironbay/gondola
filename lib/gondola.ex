@@ -10,7 +10,6 @@ defmodule Gondola do
         {:ok, token}
 
       token ->
-        IO.puts("From cache")
         {:ok, token}
     end
   end
