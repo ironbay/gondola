@@ -27,6 +27,21 @@ defmodule Gondola.Token do
     end
   end
 
+  def from_credentials(_scope, %{client_id: client, client_secret: secret, refresh_token: refresh}) do
+    {:ok, result} =
+      Tesla.client([
+        {Tesla.Middleware.FormUrlencoded, []}
+      ])
+      |> post("https://www.googleapis.com/oauth2/v4/token",
+        grant_type: "refresh_token",
+        refresh_token: refresh,
+        client_id: client,
+        client_secret: secret
+      )
+
+    {:ok, result.body}
+  end
+
   def from_credentials(scope, credentials) do
     signer = Joken.Signer.create("RS256", %{"pem" => credentials.private_key})
 
